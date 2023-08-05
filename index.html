@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>11ty Starter Site - Session Calculator</title>
+    <link rel="modulepreload" href="/static/main.js">
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    
+
+
+<meta name="description" content="Calculate your data per hour during a session">
+<meta name="generator" content="Eleventy v2.0.1">
+
+
+<meta property="og:site_name" content="11ty Starter Site">
+<meta property="og:title" content="Session Calculator">
+<meta property="og:description" content="Calculate your data per hour during a session">
+<meta property="og:url" content="http://localhost:8080/">
+<meta property="og:locale" content="en">
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Session Calculator">
+<meta name="twitter:description" content="Calculate your data per hour during a session">
+
+
+
+  </head>
+
+  <body>
+
+    
+
+<header class="w-full bg-gray-300  py-2">
+  <div class="container mx-auto flex justify-between">
+    <div class="logo">
+      <a href="/">Logo Here</a>
+    </div>
+    <div>
+      <ul class="flex gap-4"><li class="active"><a href="/" class="active">Home</a></li>
+<li><a href="/about/">About</a></li></ul>
+    </div>
+  </div>
+</header>
+
+    <div  class="py-16 px-4 mx-auto max-w-[1600px]" >
+        
+<div class="font-bold ">
+<div x-data="timeline">
+    <div class="float" x-show="started">
+        <button class="float-left mb-6 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs" @click="clear">Clear</button>
+        <div class="float-left text-xs mx-4">Session duration <div class="text-l" x-text="duration"></div></div>
+    </div>
+    <div x-show="!started">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="add">Start Session</button>
+    </div>
+    <table x-show="started" class="table-auto">
+      <thead>
+            <tr class="text-center">
+              <td>Name</td>
+              <td>Date</td>
+              <td>Time</td>
+              <td>Data 1</td>
+              <td>Data 2</td>
+            </tr>
+        </thead>
+        <template x-for="(row, idx) in rows">
+            <tr class="border ">
+                <td><input 
+                class="px-1"
+                  id="name"
+                  type="text"
+                  x-model="row.name"
+                />
+                </td>
+                <td><input
+                  id="date"
+                  name="datetime[time]"
+                  type="date"
+                  x-model="row.date"
+                  x-bind:value="row.date"
+                /></td>
+                <td><input
+                  id="time"
+                  type="text"
+                  class="text-center"
+                  x-model="row.time"
+                  x-mask="99:99:99"
+                />
+                
+                  <div class="text-xs text-center"><span x-text="row.time_diff"></span></div>
+                </td>
+                <td >
+                  <input class="text-center" x-model="row.int_one" x-mask:dynamic="$money($input, '.', ' ', 0)">
+                  <div class="text-xs text-center"><span x-text="row.int_one_diff"></span></div>
+                  </td>
+                <td >
+                  <input class="text-center" x-model="row.int_two" x-mask:dynamic="$money($input, '.', ' ', 0)">
+                  <div class="text-xs text-center"><span x-text="row.int_two_diff"></span></div>
+                  </td>
+            </tr>
+            </tr>
+        </template>
+          <tfoot>
+            <tr class="text-center ">
+              <td><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="add">+ Add event</button></td>
+              <td></td>
+              <td class="text-xl" x-text="human_duration"></td>
+              <td>
+                <span class="block text-xl" x-text="total_int_one"></span>
+                <span x-text="int_one_per_hour"></span>
+              </td>
+              <td>
+                <span class="block text-xl" x-text="total_int_two"></span>
+                <span x-text="int_two_per_hour"></span>
+              </td>
+            </tr>
+  </tfoot>
+    </table>
+</div>
+ 
+<script>
+  class Event {
+    constructor(counter, int_one=0, int_two=0) {
+      this.id = Math.floor(Date.now());
+      this.name = `Event ${counter}`
+      const now = luxon.DateTime.now();
+      this.date = now.toFormat("yyyy-MM-dd");
+      this.time = now.toFormat("HH:mm:ss");
+      this.time_diff = 0;
+      this.int_one = int_one;
+      this.int_one_diff = 0;
+      this.int_two = int_two;
+      this.int_two_diff = 0;
+    }
+  }
+
+      function date_time(row) {
+        return luxon.DateTime.fromFormat(`${row.date} ${row.time}`, "yyyy-MM-dd HH:mm:ss")
+      }
+
+      function human_diff(num1, num2) {
+        return humanize.numberFormat(num1.replaceAll(' ', '') - num2.replaceAll(' ', ''), decimals=0, decPoint=".", thousands=' ')
+      }
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('timeline', function () {
+          return {
+            open: this.$persist(false),
+            counter: this.$persist(0),
+            rows: this.$persist([]),
+            rows_computed: {},
+            now: luxon.DateTime.now(),
+
+            init() {
+              this.$watch('rows', () => {
+                this.recompute_diffs()
+              })
+              setInterval(() => {
+                this.now = luxon.DateTime.now();
+              }, 1000);
+              this.recompute_diffs()
+            },
+
+            recompute_diffs() {
+             this.$nextTick(() => {
+                this.rows.forEach((row, idx) => {
+                  row.time_diff = this.time_diff(idx)
+                  row.int_one_diff = this.int_one_diff(idx)
+                  row.int_two_diff = this.int_two_diff(idx)
+                })
+              })
+            },
+
+            time_diff(idx) {
+              if (idx === 0) {
+                return ''
+              }
+              const row1 = this.rows[idx]
+              const row2 = this.rows[idx - 1]
+              return shortEnglishHumanizer(date_time(row1).diff(date_time(row2), ['seconds']).as('seconds')*1000, { spacer: "", delimiter: " " })
+            },
+
+
+            int_one_diff(idx) {
+              if (idx === 0) {
+                return ''
+              }
+              const row1 = this.rows[idx]
+              const row2 = this.rows[idx - 1]
+              return humanize.numberFormat(row1.int_one.replaceAll(' ', '') - row2.int_one.replaceAll(' ', ''), decimals=0, decPoint=".", thousands=' ')
+            },
+            
+            int_two_diff(idx) {
+              if (idx === 0) {
+                return ''
+              }
+                  const row1 = this.rows[idx]
+                  const row2 = this.rows[idx - 1]
+                  return row1.int_two.replaceAll(' ', '') - row2.int_two.replaceAll(' ', '')
+              },
+
+            clear() {
+                this.rows = []
+                this.counter = 0
+            },
+            add() {
+                this.counter += 1
+                if (this.rows.length > 0) {
+                  previous = this.rows[this.rows.length - 1]
+                  this.rows.push(new Event(this.counter, previous.int_one, previous.int_two))
+                } else {
+                  this.rows.push(new Event(this.counter))
+                }
+            },
+
+            get first_row() {
+              return this.rows[0]
+            },
+            get last_row() {
+              return this.rows[this.rows.length - 1]
+            },
+
+            get total_duration_sec() {
+              return date_time(this.last_row).diff(date_time(this.first_row), ['seconds']).as('seconds')
+            },
+
+            get human_duration() {
+              if (this.rows.length === 0) {
+                return ''
+              }
+              return shortEnglishHumanizer(this.total_duration_sec*1000, { spacer: "", delimiter: " " })
+            },
+            get total_int_one() {
+              if (this.rows.length < 2) {
+                return ''
+              }
+              return human_diff(this.last_row.int_one, this.first_row.int_one)
+            },
+            get int_one_per_hour() {
+            if (this.rows.length < 2) {
+                return ''
+              }
+              return humanize.numberFormat(this.total_int_one.replaceAll(' ', '')/(this.total_duration_sec/3600), decimals=0, decPoint=".", thousands=' ') + "/hour"
+            },
+            get total_int_two() {
+              if (this.rows.length < 2) {
+                return ''
+              }
+              return human_diff(this.last_row.int_two, this.first_row.int_two)
+            },
+            get int_two_per_hour() {
+               if (this.rows.length < 2) {
+                return ''
+              }
+              return humanize.numberFormat(this.total_int_two.replaceAll(' ', '')/(this.total_duration_sec/3600), decimals=0, decPoint=".", thousands=' ') + "/hour"
+            },
+            get duration() {
+              if (this.rows.length === 0) {
+                return ''
+              }
+              return shortEnglishHumanizer(Math.floor(this.now.diff(date_time(this.first_row), ['seconds']).as('seconds'))*1000, { spacer: "", delimiter: " " })
+            },
+            get started(){
+              return this.rows.length > 0
+            }
+          }
+        })
+    })
+</script>
+
+</div>
+
+    </div>
+
+    
+<footer class="w-full bg-gray-300 py-2 text-center mt-auto">
+
+    <div class="copyright">
+      &copy; 2023
+    </div>
+
+</footer>
+
+    <script type="module" src="/static/main.js"></script>
+    
+  </body>
+</html>
