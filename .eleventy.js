@@ -5,7 +5,8 @@ const Image = require("@11ty/eleventy-img");
 const yaml = require("js-yaml"); // Because yaml is nicer than json for editors
 require("dotenv").config();
 
-const baseUrl = process.env.BASE_URL || "http://localhost:8080";
+const isDev = process.env.ELEVENTY_ENV === "development";
+const baseUrl = isDev ? "http://localhost:8080" : "https://benoss.github.io/";
 console.log("baseUrl is set to ...", baseUrl);
 
 const globalSiteData = {
@@ -19,6 +20,11 @@ module.exports = function (eleventyConfig) {
   /* --- GLOBAL DATA --- */
 
   eleventyConfig.addGlobalData("site", globalSiteData);
+  const toAbsoluteUrl = (url) => {
+    return new URL(url, globalSiteData.baseUrl).href;
+  };
+
+  eleventyConfig.addFilter("toAbsoluteUrl", toAbsoluteUrl);
 
   /* --- YAML SUPPORT --- */
 

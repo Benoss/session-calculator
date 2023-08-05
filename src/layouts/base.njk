@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ site.title }} - {{ title or meta.title }}</title>
-    <link rel="modulepreload" href="{{ '/static/main.js' | url }}">
-    <link rel="stylesheet" href="{{ '/static/style.css' | url }}" />
+    <link rel="modulepreload" href="{{ '/static/main.js' | url | toAbsoluteUrl}}">
+    <link rel="stylesheet" href="{{ '/static/style.css' | url | toAbsoluteUrl}}" />
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
     {% include "meta.njk" %}
   </head>
@@ -20,7 +20,7 @@
 
     {% include "footer.njk" %}
 
-    <script type="module" src="{{ '/static/main.js' | url }}"></script>
+    <script type="module" src="{{ '/static/main.js' | url | toAbsoluteUrl}}"></script>
     
   </body>
 </html>

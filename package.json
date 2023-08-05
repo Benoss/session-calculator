@@ -10,7 +10,7 @@
     "watch-tailwind": "npx tailwindcss -i src/static/css/index.css -o _build/static/style.css --watch",
     "watch-esbuild": "npx esbuild src/static/js/index.js --bundle --outfile=_build/static/main.js --watch",
     "clean": "del-cli _site",
-    "build-11ty": "npx @11ty/eleventy",
+    "build-11ty": "npx @11ty/eleventy --pathprefix=/session-calculator/",
     "build-tailwind": "npx tailwindcss -i src/static/css/index.css -o _build/static/style.css --minify",
     "build-esbuild": "npx esbuild src/static/js/index.js --bundle --outfile=_build/static/main.js --minify"
   },
