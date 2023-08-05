@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "concurrently -c \"bgBlue.bold,bgMagenta.bold,bgYellow.bold\" npm:build-*",
+    "build": "npm run build-esbuild && npm run build-tailwind && npm run build-11ty",
     "dev": "concurrently -c \"bgBlue.bold,bgMagenta.bold,bgYellow.bold\" npm:watch-*",
     "watch-11ty": "npx @11ty/eleventy --serve",
     "watch-tailwind": "npx tailwindcss -i src/static/css/index.css -o _build/static/style.css --watch",
