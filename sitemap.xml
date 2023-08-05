@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     
         <url>
-            <loc>http://localhost:8080/about/</loc>
-            <lastmod>2023-08-05T04:13:49.640Z</lastmod>
+            <loc>https://benoss.github.io//session-calculator/about/</loc>
+            <lastmod>2023-08-05T04:38:59.625Z</lastmod>
         </url>
     
         <url>
-            <loc>http://localhost:8080/</loc>
-            <lastmod>2023-08-05T04:13:49.640Z</lastmod>
+            <loc>https://benoss.github.io//session-calculator/</loc>
+            <lastmod>2023-08-05T04:38:59.625Z</lastmod>
         </url>
     
 </urlset>
